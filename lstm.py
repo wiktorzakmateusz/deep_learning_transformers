@@ -201,9 +201,27 @@ def train_models_with_hyperparams():
 
             results.append([epochs, learning_rate, weight_decay, test_acc])
 
-    results_df = pd.DataFrame(results, columns=['epochs', 'dropout', 'learning_rate', 'weight_decay', 'test_acc'])
+    results_df = pd.DataFrame(results, columns=['epochs', 'learning_rate', 'weight_decay', 'test_acc'])
     results_df.to_csv('results_lstm.csv', index=False)
 
 
+def train_final_model():
+    epochs = 100
+    learning_rate = 0.0005
+    weight_decay = 0.0001
+
+    data = Data()
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    model = LSTMClassifier(input_size=64, hidden_size=10, num_layers=4, output_size=12)
+    model.train_cnn(epochs=epochs, data=data, learning_rate=learning_rate, weight_decay=weight_decay, device=device)
+
+    test_acc, preds, truths = model.evaluate(data.test_dl)
+    df = pd.DataFrame({"train": model.train_accs, "val": model.val_accs})
+    df.to_csv('train_val_accs_lstm.csv', index=False)
+
+    df = pd.DataFrame({"truth": truths, "pred": preds})
+    df.to_csv('truth_prediction_lstm.csv', index=False)
+
 if __name__ == "__main__":
-    train_models_with_hyperparams()
+    train_final_model()
